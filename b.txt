@@ -1,1 +1,3 @@
 First line.tx[D[D[D in b.txt
+Second Line in b.txt
+Third Line in b.txt
