@@ -1,0 +1,48 @@
+pipeline {
+  agent any           // make sure this runs on a Windows agent
+  stages {
+    stage('Init') {
+      steps {
+        // create build folder and artifact
+        bat """
+          echo Starting simple pipeline (windows)
+          if not exist build mkdir build
+          echo Artifact from %JOB_NAME% #%BUILD_NUMBER% > build\\out.txt
+          dir build
+        """
+      }
+    }
+
+    stage('Test') {
+      steps {
+        // run a short, non-interactive wait using PowerShell (returns 0)
+        bat 'powershell -Command "Start-Sleep -Seconds 1"'
+        // you can replace above with an actual test runner command, e.g.:
+        // bat 'mvn -B -DskipTests=false test'  (if Maven is installed)
+        // or bat 'gradlew test' (if Gradle wrapper is present)
+      }
+    }
+
+    stage('Archive') {
+      steps {
+        // archive the artifact created in Init
+        archiveArtifacts artifacts: 'build/*.txt', fingerprint: true
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "Pipeline succeeded (Windows)"
+      bat 'echo Build workspace listing: & dir'
+    }
+    failure {
+      echo "Pipeline failed (Windows) - check console output"
+      bat 'echo Failure - workspace listing: & dir'
+    }
+    always {
+      // helpful: show the artifact contents
+      bat 'echo ==== Artifact contents ==== & type build\\out.txt || echo (no artifact found)'
+    }
+  }
+}
